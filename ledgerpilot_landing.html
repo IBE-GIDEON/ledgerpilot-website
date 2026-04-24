@@ -1,0 +1,792 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>LedgerPilot - Smart Tax Assistant for Freelancers</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  /* --- LIGHT MODE VARIABLES (Default) --- */
+  :root {
+    --bg-light: #f8fafc;
+    --text-main: #0f172a;
+    --text-muted: #64748b;
+    --accent-yellow: #FACC15; 
+    --accent-yellow-hover: #EAB308;
+    --glass-bg: rgba(255, 255, 255, 0.65);
+    --glass-border: rgba(255, 255, 255, 0.8);
+    --glass-shadow: 0 20px 40px rgba(0, 0, 0, 0.05);
+    
+    --nav-bg: rgba(248, 250, 252, 0.8);
+    --glow-bg: #e2e8f0;
+    --bg-card: #fff;
+    --border-color: #e2e8f0;
+    --border-light: #f1f5f9;
+    --phone-border: #e2e8f0;
+    --app-ui-bg: #f8fafc;
+    --icon-bg: #fff;
+    --cta-bg: #0f172a;
+    --cta-text: #fff;
+    --car-window: #0f172a;
+    --island-bg: #0f172a;
+  }
+
+  /* --- DARK MODE VARIABLES --- */
+  [data-theme="dark"] {
+    --bg-light: #0B0F19; /* Deep slate/navy background */
+    --text-main: #f8fafc;
+    --text-muted: #94a3b8;
+    --glass-bg: rgba(15, 23, 42, 0.65);
+    --glass-border: rgba(255, 255, 255, 0.1);
+    --glass-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+
+    --nav-bg: rgba(11, 15, 25, 0.8);
+    --glow-bg: #1e293b;
+    --bg-card: #1e293b;
+    --border-color: #334155;
+    --border-light: #1e293b;
+    --phone-border: #1e293b;
+    --app-ui-bg: #0f172a;
+    --icon-bg: #1e293b;
+    --cta-bg: #020617;
+    --cta-text: #f8fafc;
+    --car-window: #1e293b;
+    --island-bg: #000000;
+  }
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    background-color: var(--bg-light);
+    font-family: 'Inter', sans-serif;
+    color: var(--text-main);
+    overflow-x: hidden;
+    line-height: 1.5;
+    transition: background-color 0.3s ease, color 0.3s ease;
+  }
+
+  /* 3D Ambient Background Glows */
+  body::before, body::after {
+    content: '';
+    position: fixed;
+    border-radius: 50%;
+    filter: blur(100px);
+    z-index: -2;
+    opacity: 0.4;
+    transition: background-color 0.3s ease;
+  }
+  body::before {
+    width: 600px; height: 600px;
+    background: var(--accent-yellow);
+    top: -200px; right: -100px;
+  }
+  body::after {
+    width: 500px; height: 500px;
+    background: var(--glow-bg);
+    bottom: -100px; left: -100px;
+  }
+
+  /* --- FADED BACKGROUND CAR --- */
+  .bg-car-container {
+    position: fixed;
+    top: 35%;
+    left: -10%;
+    width: 500px;
+    opacity: 0.04; 
+    z-index: -1;
+    pointer-events: none;
+    will-change: transform;
+  }
+
+  /* --- NAVBAR --- */
+  nav {
+    position: fixed;
+    top: 0; left: 0; right: 0;
+    z-index: 100;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 20px 40px;
+    background: var(--nav-bg);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border-bottom: 1px solid var(--glass-border);
+    transition: background-color 0.3s ease, border-color 0.3s ease;
+  }
+  .logo {
+    font-size: 1.25rem;
+    font-weight: 800;
+    letter-spacing: -0.02em;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .logo-icon {
+    width: 32px; height: 32px;
+    background: var(--accent-yellow);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    border-radius: 8px;
+  }
+  .logo-icon img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+  }
+  .nav-controls {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+  }
+  .theme-toggle-btn {
+    background: var(--bg-card);
+    border: 1.5px solid var(--border-color);
+    color: var(--text-main);
+    width: 50px; height: 28px;
+    border-radius: 20px;
+    display: flex; 
+    align-items: center; 
+    justify-content: flex-start;
+    cursor: pointer;
+    font-size: 0.85rem;
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    padding: 2px 3px;
+    position: relative;
+    overflow: hidden;
+  }
+  
+  .theme-toggle-btn::after {
+    content: '';
+    position: absolute;
+    width: 22px;
+    height: 22px;
+    background: white;
+    border-radius: 50%;
+    left: 3px;
+    top: 50%;
+    transform: translateY(-50%);
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+  }
+  
+  .theme-toggle-btn {
+    gap: 6px;
+    padding-left: 5px;
+  }
+  
+  .theme-toggle-btn span {
+    opacity: 0;
+    font-size: 1rem;
+    transition: opacity 0.3s ease;
+    position: relative;
+    z-index: 2;
+  }
+  
+  .theme-toggle-btn span:first-of-type {
+    opacity: 1;
+  }
+  
+  .theme-toggle-btn.dark-mode {
+    background: #334155;
+    border-color: #475569;
+  }
+  
+  .theme-toggle-btn.dark-mode::after {
+    left: calc(100% - 25px);
+    background: #0f172a;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
+  }
+  
+  .theme-toggle-btn.dark-mode span:first-of-type {
+    opacity: 0;
+  }
+  
+  .theme-toggle-btn.dark-mode span:last-of-type {
+    opacity: 1;
+  }
+  
+  .theme-toggle-btn:hover {
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    transform: translateY(-1px);
+  }
+  
+  .theme-toggle-btn:active {
+    transform: translateY(0);
+  }
+  .nav-btn {
+    background: var(--text-main);
+    color: var(--bg-light);
+    padding: 10px 24px;
+    border-radius: 100px;
+    text-decoration: none;
+    font-weight: 600;
+    font-size: 0.9rem;
+    transition: all 0.3s ease;
+  }
+  .nav-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+    opacity: 0.9;
+  }
+
+  /* --- HERO SECTION --- */
+  .hero {
+    padding: 160px 20px 80px;
+    max-width: 1200px;
+    margin: 0 auto;
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+  .tagline {
+    background: rgba(250, 204, 21, 0.2);
+    color: #b45309;
+    padding: 8px 16px;
+    border-radius: 100px;
+    font-weight: 600;
+    font-size: 0.85rem;
+    margin-bottom: 24px;
+    border: 1px solid rgba(250, 204, 21, 0.3);
+  }
+  [data-theme="dark"] .tagline {
+    color: var(--accent-yellow);
+  }
+  .hero h1 {
+    font-size: clamp(3rem, 6vw, 5rem);
+    font-weight: 800;
+    letter-spacing: -0.04em;
+    line-height: 1.05;
+    margin-bottom: 24px;
+  }
+  .hero h1 span { color: var(--accent-yellow); }
+  .hero p {
+    font-size: 1.2rem;
+    color: var(--text-muted);
+    max-width: 600px;
+    margin-bottom: 40px;
+  }
+
+  /* APP DOWNLOAD BUTTONS */
+  .download-group {
+    display: flex;
+    gap: 16px;
+    justify-content: center;
+    margin-bottom: 80px;
+  }
+  .store-btn {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    background: var(--bg-card);
+    border: 1px solid var(--border-color);
+    padding: 12px 24px;
+    border-radius: 16px;
+    text-decoration: none;
+    color: var(--text-main);
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.02);
+  }
+  .store-btn:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 12px 24px rgba(0,0,0,0.08);
+    border-color: var(--accent-yellow);
+  }
+  .store-btn.primary {
+    background: var(--text-main);
+    color: var(--bg-light);
+    border-color: var(--text-main);
+  }
+  .store-icon { font-size: 1.5rem; display: flex; align-items: center; justify-content: center; }
+  .store-text { text-align: left; }
+  .store-sub { font-size: 0.65rem; opacity: 0.8; text-transform: uppercase; font-weight: 600; letter-spacing: 0.05em; }
+  .store-main { font-size: 1.05rem; font-weight: 700; line-height: 1; margin-top: 2px; }
+
+  /* --- REALISTIC 3D iPHONE --- */
+  .phone-container {
+    perspective: 1000px;
+    margin: 0 auto;
+    width: 100%;
+    max-width: 340px;
+    position: relative;
+    z-index: 10;
+  }
+  .iphone-mockup {
+    width: 100%;
+    height: 700px;
+    background: var(--app-ui-bg);
+    border-radius: 55px;
+    border: 12px solid var(--phone-border);
+    box-shadow: 
+      inset 0 0 0 4px #0f172a, /* Inner bezel */
+      0 30px 60px rgba(0,0,0,0.15), 
+      20px 20px 60px rgba(0,0,0,0.05); 
+    position: relative;
+    overflow: hidden;
+    transform: rotateX(5deg) rotateY(-5deg);
+    transition: transform 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275), border-color 0.3s ease;
+  }
+  .phone-container:hover .iphone-mockup {
+    transform: rotateX(0deg) rotateY(0deg) translateY(-10px);
+  }
+  
+  /* Animated Dynamic Island */
+  .dynamic-island {
+    position: absolute;
+    top: 15px; left: 50%;
+    transform: translateX(-50%);
+    width: 120px; height: 35px;
+    background: var(--island-bg);
+    border-radius: 20px;
+    z-index: 50;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+  }
+  .dynamic-island.active {
+    width: 220px;
+    height: 44px;
+    border-radius: 24px;
+  }
+  .island-content {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    color: #fff;
+    font-size: 0.85rem;
+    font-weight: 600;
+    opacity: 0;
+    transform: scale(0.8);
+    transition: all 0.3s ease;
+    white-space: nowrap;
+  }
+  .dynamic-island.active .island-content {
+    opacity: 1;
+    transform: scale(1);
+    transition-delay: 0.15s;
+  }
+  .tick-circle {
+    background: #10b981;
+    width: 20px; height: 20px;
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    color: #0f172a;
+    font-size: 0.7rem;
+    font-weight: 800;
+  }
+
+  /* Screen Reflection */
+  .iphone-mockup::after {
+    content: '';
+    position: absolute;
+    top: 0; left: -50%; width: 200%; height: 100%;
+    background: linear-gradient(to right, rgba(255,255,255,0) 0%, rgba(255,255,255,0.3) 50%, rgba(255,255,255,0) 100%);
+    transform: skewX(-20deg);
+    pointer-events: none;
+    z-index: 30;
+  }
+
+  /* INSIDE THE PHONE (APP UI) */
+  .app-ui {
+    background: var(--app-ui-bg);
+    height: 100%;
+    padding: 70px 20px 20px;
+    font-family: 'Inter', sans-serif;
+    transition: background-color 0.3s ease;
+  }
+  .app-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; }
+  .app-greeting { font-size: 1.1rem; font-weight: 700; color: var(--text-main); transition: color 0.3s ease; }
+  
+  /* REAL IMAGE IN AVATAR */
+  .app-avatar { 
+    width: 40px; height: 40px; 
+    border-radius: 50%; 
+    background-color: var(--border-color);
+    background-image: url('https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?ixlib=rb-4.0.3&auto=format&fit=crop&w=150&q=80');
+    background-size: cover;
+    background-position: center;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    transition: background-color 0.3s ease;
+  }
+  
+  /* App Cards */
+  .app-card {
+    background: var(--bg-card);
+    border-radius: 24px;
+    padding: 20px;
+    margin-bottom: 16px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.03);
+    border: 1px solid var(--border-color);
+    transition: background-color 0.3s ease, border-color 0.3s ease;
+  }
+  .app-card.yellow {
+    background: var(--accent-yellow);
+    border: none;
+    box-shadow: 0 10px 25px rgba(250, 204, 21, 0.3);
+  }
+  .app-label { font-size: 0.75rem; text-transform: uppercase; font-weight: 700; opacity: 0.7; letter-spacing: 0.05em; margin-bottom: 4px; color: var(--text-main); transition: color 0.3s ease; }
+  .app-card.yellow .app-label { color: #451a03; }
+  .app-value { font-size: 2rem; font-weight: 800; letter-spacing: -0.03em; color: var(--text-main); transition: color 0.3s ease; }
+  .app-card.yellow .app-value { color: #451a03; }
+  
+  .app-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 16px; }
+  .mini-card { background: var(--bg-card); padding: 16px; border-radius: 20px; box-shadow: 0 4px 10px rgba(0,0,0,0.02); border: 1px solid var(--border-color); transition: background-color 0.3s ease, border-color 0.3s ease; }
+  .mini-value { font-size: 1.2rem; font-weight: 700; margin-top: 4px; transition: color 0.3s ease; }
+  .text-green { color: #10b981; }
+  .text-red { color: #ef4444; }
+  .pill-bg { background: var(--border-light); padding: 8px 12px; border-radius: 12px; font-weight: 700; font-size: 0.9rem; transition: background-color 0.3s ease; }
+
+  /* --- 3D GLASS CARDS SECTION --- */
+  .features-section {
+    max-width: 1200px;
+    margin: 120px auto;
+    padding: 0 20px;
+  }
+  .section-title {
+    text-align: center;
+    font-size: clamp(2rem, 4vw, 3rem);
+    font-weight: 800;
+    margin-bottom: 60px;
+    letter-spacing: -0.03em;
+  }
+
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 30px;
+  }
+
+  /* Glassmorphism Card Style */
+  .glass-card {
+    background: var(--glass-bg);
+    backdrop-filter: blur(24px);
+    -webkit-backdrop-filter: blur(24px);
+    border: 1px solid var(--glass-border);
+    border-radius: 32px;
+    padding: 40px;
+    box-shadow: var(--glass-shadow);
+    transition: transform 0.4s ease, box-shadow 0.4s ease, background-color 0.3s ease, border-color 0.3s ease;
+    opacity: 0;
+    transform: translateY(40px);
+  }
+  
+  .glass-card:hover {
+    transform: translateY(-10px) scale(1.02);
+    box-shadow: 0 30px 60px rgba(0,0,0,0.08);
+    border-color: rgba(250, 204, 21, 0.5); /* Yellow glow on hover */
+  }
+
+  .glass-card.visible {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+
+  .icon-box {
+    width: 60px; height: 60px;
+    background: var(--icon-bg);
+    border-radius: 16px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1.8rem;
+    box-shadow: 0 10px 20px rgba(0,0,0,0.05);
+    margin-bottom: 24px;
+    border: 1px solid var(--border-color);
+    transition: background-color 0.3s ease;
+  }
+  .glass-card h3 { font-size: 1.4rem; font-weight: 700; margin-bottom: 12px; }
+  .glass-card p { color: var(--text-muted); font-size: 1.05rem; line-height: 1.6; }
+
+  /* --- BOTTOM CTA --- */
+  .cta-section {
+    background: var(--cta-bg);
+    color: var(--cta-text);
+    text-align: center;
+    padding: 100px 20px;
+    margin-top: 100px;
+    transition: background-color 0.3s ease;
+  }
+  .cta-content { max-width: 600px; margin: 0 auto; }
+  .cta-content h2 { font-size: 2.5rem; font-weight: 800; margin-bottom: 20px; letter-spacing: -0.03em; }
+  .cta-content p { color: var(--text-muted); font-size: 1.1rem; margin-bottom: 40px; }
+
+  /* --- FOOTER --- */
+  footer {
+    padding: 40px 20px;
+    text-align: center;
+    border-top: 1px solid var(--border-color);
+    color: var(--text-muted);
+    font-size: 0.9rem;
+    transition: border-color 0.3s ease;
+  }
+
+  @media (max-width: 768px) {
+    nav { padding: 16px 20px; }
+    .download-group { flex-direction: column; align-items: center; }
+    .store-btn { width: 100%; max-width: 280px; justify-content: center; }
+    .glass-card { padding: 30px; }
+  }
+</style>
+</head>
+<body>
+
+<div class="bg-car-container">
+  <svg viewBox="0 0 512 512" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <path d="M464 224L415.6 151.3C404.2 134.2 385.1 124 364.5 124H167.3C142.3 124 119.8 138.8 109.2 161.7L80 224H48C21.5 224 0 245.5 0 272v104C0 384.8 7.2 392 16 392h28.1c9.4 36.3 42.1 64 81.9 64s72.5-27.7 81.9-64h100.2c9.4 36.3 42.1 64 81.9 64s72.5-27.7 81.9-64H496c8.8 0 16-7.2 16-16V288C512 252.7 483.3 224 464 224z" fill="#FACC15"/>
+    <path d="M396 208H280V168h84.5c8.2 0 15.9 4.1 20.4 10.9L426.6 224H396V208zM122.9 168h125.1v56H97.1l25.8-56z" fill="var(--car-window)"/>
+    <circle cx="126" cy="376" r="32" fill="var(--car-window)" />
+    <circle cx="390" cy="376" r="32" fill="var(--car-window)" />
+  </svg>
+</div>
+
+<nav>
+  <div class="logo">
+    <div class="logo-icon">
+      <img src="logo.png" alt="LedgerPilot Logo" />
+    </div>
+    LedgerPilot
+  </div>
+  <div class="nav-controls">
+    <button id="theme-toggle" class="theme-toggle-btn" aria-label="Toggle Dark Mode">
+      <span>🌙</span>
+      <span>☀️</span>
+    </button>
+    <a href="#download" class="nav-btn">Get the App</a>
+  </div>
+</nav>
+
+<section class="hero">
+  <div class="tagline">Built for Freelancers & Creators</div>
+  <h1>Less chaos.<br><span>More clarity.</span><br>Every payday.</h1>
+  <p>The smart assistant that watches your money, automatically tracks your business expenses (even driving), and helps you pay the exact right amount of tax.</p>
+  
+  <div class="download-group" id="download">
+    <a href="#" class="store-btn primary">
+      <div class="store-icon">
+        <svg viewBox="0 0 384 512" width="1em" height="1em"><path fill="currentColor" d="M318.7 268.7c-.2-36.7 16.4-64.4 50-84.8-18.8-26.9-47.2-41.7-84.7-44.6-35.5-2.8-74.3 20.7-88.5 20.7-15 0-49.4-19.7-76.4-19.7C63.3 141.2 4 184.8 4 273.5q0 39.3 14.4 81.2c12.8 36.7 59 126.7 107.2 125.2 25.2-.6 43-17.9 75.8-17.9 31.8 0 48.3 17.9 76.4 17.3 48.6-.7 90.4-84.3 102.8-119.3-65.2-30.7-61.7-90-62-91.3zM207.8 105.5c20.8-22.2 32.7-49.6 30.7-77.5-24.1 1.4-53.5 16.2-73.4 36.6-18.1 18.5-31.5 46.5-28.7 73.8 26.6 2 52.8-12 71.4-32.9z"></path></svg>
+      </div>
+      <div class="store-text">
+        <div class="store-sub">Download on the</div>
+        <div class="store-main">App Store</div>
+      </div>
+    </a>
+    <a href="#" class="store-btn">
+      <div class="store-icon">
+        <svg viewBox="0 0 512 512" width="1em" height="1em"><path fill="currentColor" d="M325.3 234.3L104.6 13l280.8 161.2-60.1 60.1zM47 0C34 6.8 25.3 19.2 25.3 35.3v441.3c0 16.1 8.7 28.5 21.7 35.3l256.6-256L47 0zm425.2 225.6l-58.9-34.1-65.7 64.5 65.7 64.5 60.1-34.1c18-14.3 18-46.5-1.2-60.8zM104.6 499l280.8-161.2-60.1-60.1L104.6 499z"></path></svg>
+      </div>
+      <div class="store-text">
+        <div class="store-sub">Get it on</div>
+        <div class="store-main">Google Play</div>
+      </div>
+    </a>
+  </div>
+
+  <div class="phone-container">
+    <div class="iphone-mockup">
+      <div class="dynamic-island">
+        <div class="island-content">
+          <div class="tick-circle">✓</div>
+          <div>Mileage Tracked</div>
+        </div>
+      </div>
+
+      <div class="app-ui">
+        <div class="app-header">
+          <div class="app-greeting">Hello, John 👋</div>
+          <div class="app-avatar"></div>
+        </div>
+        
+        <div class="app-card">
+          <div class="app-label">Real Net Profit</div>
+          <div class="app-value">$2,100.00</div>
+        </div>
+
+        <div class="app-card yellow">
+          <div class="app-label">Tax to Set Aside</div>
+          <div class="app-value">$450.00</div>
+          <div style="font-size: 0.8rem; font-weight: 600; color: #78350f; margin-top: 8px;">Due June 15</div>
+        </div>
+
+        <div class="app-grid">
+          <div class="mini-card">
+            <div class="app-label">Income</div>
+            <div class="mini-value text-green">+$3,200</div>
+          </div>
+          <div class="mini-card">
+            <div class="app-label">Expenses</div>
+            <div class="mini-value text-red">-$1,100</div>
+          </div>
+        </div>
+        
+        <div class="app-card" style="padding: 16px;">
+          <div style="display:flex; justify-content:space-between; align-items:center;">
+            <div>
+              <div class="app-label">Miles Tracked</div>
+              <div style="font-weight: 700;">120 miles</div>
+            </div>
+            <div class="pill-bg">
+              $87 saved
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="features-section">
+  <h2 class="section-title">Everything you need.<br>Nothing you don't.</h2>
+  
+  <div class="grid">
+    <div class="glass-card animate-on-scroll">
+      <div class="icon-box">💳</div>
+      <h3>Bank & Card Linking</h3>
+      <p>Connect your accounts once. We automatically pull in transactions and separate your income from your expenses without you lifting a finger.</p>
+    </div>
+
+    <div class="glass-card animate-on-scroll">
+      <div class="icon-box">🧾</div>
+      <h3>Smart Receipt Scanner</h3>
+      <p>Bought a laptop charger? Just take a picture. Our OCR reads the receipt, categorizes it as a business expense, and lowers your taxable income.</p>
+    </div>
+
+    <div class="glass-card animate-on-scroll">
+      <div class="icon-box">🚗</div>
+      <h3>Auto Mileage Tracking</h3>
+      <p>The app detects when you drive. Meet a client or drive for Uber? We log the trip, calculate the government rate, and turn miles into tax deductions.</p>
+    </div>
+
+    <div class="glass-card animate-on-scroll">
+      <div class="icon-box">💰</div>
+      <h3>Quarterly Tax Estimates</h3>
+      <p>No more tax time surprises. We analyze your real profit in real-time and tell you exactly how much to set aside so you never overpay.</p>
+    </div>
+
+    <div class="glass-card animate-on-scroll">
+      <div class="icon-box">📊</div>
+      <h3>Real-Time Profit</h3>
+      <p>Stop guessing how much you actually make. Instantly view your total earned minus expenses to understand your true take-home pay.</p>
+    </div>
+
+    <div class="glass-card animate-on-scroll">
+      <div class="icon-box">📤</div>
+      <h3>CPA-Ready Export</h3>
+      <p>Tax season is now a one-click job. Export your organized income, categorized expenses, and mileage logs straight to your accountant.</p>
+    </div>
+  </div>
+</section>
+
+<section class="cta-section">
+  <div class="cta-content">
+    <h2>Stop stressing over spreadsheets.</h2>
+    <p>Join thousands of freelancers tracking money, saving on taxes, and staying organized.</p>
+    <div class="download-group" style="margin-bottom: 0;">
+      <a href="#" class="store-btn" style="background:#fff; border-color:#fff; color:#0f172a;">
+        <div class="store-icon">
+          <svg viewBox="0 0 384 512" width="1em" height="1em"><path fill="currentColor" d="M318.7 268.7c-.2-36.7 16.4-64.4 50-84.8-18.8-26.9-47.2-41.7-84.7-44.6-35.5-2.8-74.3 20.7-88.5 20.7-15 0-49.4-19.7-76.4-19.7C63.3 141.2 4 184.8 4 273.5q0 39.3 14.4 81.2c12.8 36.7 59 126.7 107.2 125.2 25.2-.6 43-17.9 75.8-17.9 31.8 0 48.3 17.9 76.4 17.3 48.6-.7 90.4-84.3 102.8-119.3-65.2-30.7-61.7-90-62-91.3zM207.8 105.5c20.8-22.2 32.7-49.6 30.7-77.5-24.1 1.4-53.5 16.2-73.4 36.6-18.1 18.5-31.5 46.5-28.7 73.8 26.6 2 52.8-12 71.4-32.9z"></path></svg>
+        </div>
+        <div class="store-text">
+          <div class="store-sub">Download on the</div>
+          <div class="store-main">App Store</div>
+        </div>
+      </a>
+      <a href="#" class="store-btn" style="background:transparent; border-color:rgba(255,255,255,0.2); color:#fff;">
+        <div class="store-icon">
+          <svg viewBox="0 0 512 512" width="1em" height="1em"><path fill="currentColor" d="M325.3 234.3L104.6 13l280.8 161.2-60.1 60.1zM47 0C34 6.8 25.3 19.2 25.3 35.3v441.3c0 16.1 8.7 28.5 21.7 35.3l256.6-256L47 0zm425.2 225.6l-58.9-34.1-65.7 64.5 65.7 64.5 60.1-34.1c18-14.3 18-46.5-1.2-60.8zM104.6 499l280.8-161.2-60.1-60.1L104.6 499z"></path></svg>
+        </div>
+        <div class="store-text">
+          <div class="store-sub" style="color:rgba(255,255,255,0.7)">Get it on</div>
+          <div class="store-main">Google Play</div>
+        </div>
+      </a>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="logo" style="justify-content: center; margin-bottom: 16px; opacity: 0.5;">
+    <div class="logo-icon">
+      <img src="logo.png" alt="LedgerPilot Logo" />
+    </div>
+    LedgerPilot
+  </div>
+  <p>© 2026 LedgerPilot. All rights reserved.</p>
+</footer>
+
+<script>
+  document.addEventListener('DOMContentLoaded', () => {
+    
+    // 1. Theme Toggle Logic
+    const themeToggle = document.getElementById('theme-toggle');
+    
+    // Check saved theme or default to light
+    const currentTheme = localStorage.getItem('theme') || 'light';
+    document.documentElement.setAttribute('data-theme', currentTheme);
+    
+    if (currentTheme === 'dark') {
+      themeToggle.classList.add('dark-mode');
+    }
+
+    themeToggle.addEventListener('click', () => {
+      let theme = document.documentElement.getAttribute('data-theme');
+      let newTheme = theme === 'dark' ? 'light' : 'dark';
+      
+      document.documentElement.setAttribute('data-theme', newTheme);
+      localStorage.setItem('theme', newTheme);
+      
+      if (newTheme === 'dark') {
+        themeToggle.classList.add('dark-mode');
+      } else {
+        themeToggle.classList.remove('dark-mode');
+      }
+    });
+
+    // 2. 3D Glass Card Visibility on Scroll
+    const observerOptions = { root: null, rootMargin: '0px', threshold: 0.15 };
+    const observer = new IntersectionObserver((entries, observer) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          entry.target.classList.add('visible');
+          observer.unobserve(entry.target); 
+        }
+      });
+    }, observerOptions);
+
+    const cards = document.querySelectorAll('.animate-on-scroll');
+    cards.forEach(card => observer.observe(card));
+
+    // 3. Faded Background Car Scroll Logic
+    const bgCar = document.querySelector('.bg-car-container');
+    window.addEventListener('scroll', () => {
+      const scrollPos = window.scrollY;
+      bgCar.style.transform = `translateX(${scrollPos * 0.6}px)`;
+    });
+
+    // 4. Dynamic Island Animation Loop
+    const island = document.querySelector('.dynamic-island');
+    setTimeout(() => {
+      island.classList.add('active');
+      setTimeout(() => {
+        island.classList.remove('active');
+      }, 3000);
+    }, 1500);
+
+    setInterval(() => {
+      island.classList.add('active');
+      setTimeout(() => {
+        island.classList.remove('active');
+      }, 3000);
+    }, 8000);
+  });
+</script>
+
+</body>
+</html>
